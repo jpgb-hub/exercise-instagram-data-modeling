@@ -5,17 +5,18 @@ from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy import create_engine
 from eralchemy2 import render_er
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 Base = declarative_base()
 
 
 class Follower(Base):
     __tablename__ = 'follower'
+    ID = Column(Integer, primary_key=True)
     user_from_id = Column(Integer, ForeignKey('user.ID'), primary_key=True)
     user_to_id = Column(Integer, ForeignKey('user.ID'), nullable=False)
-    user_from = relationship("User", foreign_keys=[user_from_id])
-    user_to = relationship("User", foreign_keys=[user_to_id])
+    user_from = relationship("User", foreign_keys=[user_from_id], backref=backref("following", uselist=True))
+    user_to = relationship("User", foreign_keys=[user_to_id], backref=backref("followed_by", uselist=True))
 
 class User(Base):
     __tablename__ = 'user'
@@ -33,7 +34,7 @@ class Media(Base):
     type = Column(Integer)
     url = Column(String(250), nullable=False)
     post_id = Column(Integer, ForeignKey('post.ID'))
-    post = relationship("Post", backref="media")
+    post = relationship("Post", backref=backref("media", uselist=True))
 
 class Post(Base):
     __tablename__ = 'post'
@@ -46,4 +47,4 @@ class Comment(Base):
     ID = Column(Integer, primary_key=True)
     comment_text = Column(String(250), nullable=False)
     author_id = Column(Integer, ForeignKey('user.ID'))
-    post_id = Column(Integer, ForeignKey('post.ID'))
+    post_id = Column(Integer, ForeignKey('post.ID')) 
